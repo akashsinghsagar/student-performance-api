@@ -15,12 +15,12 @@
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js'
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js'
 import { Line, Bar, Pie } from 'react-chartjs-2'
 import '../styles/pages.css'
 
 // Register Chart.js components for rendering different chart types
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend)
 
 export default function Analytics() {
   const navigate = useNavigate()
@@ -251,19 +251,19 @@ export default function Analytics() {
       {/* Section 0: Charts */}
       {activeSection === 0 && (
         <div className="analytics-grid">
-          <div className="chart-card animate-fade-in">
-            <h2>Model Performance Metrics</h2>
+          <div className="chart-card performance-card animate-fade-in">
+            <h2>📈 Model Performance Metrics</h2>
             <div className="chart-container">
               <Line data={performanceData} options={chartOptions} />
             </div>
             <div className="card-footer">
-              <p>Test Accuracy: <strong>R² = 0.8121</strong></p>
-              <p>Mean Absolute Error: <strong>1.1585 grades</strong></p>
+              <p>Test Accuracy: <strong style={{color: '#7c3aed'}}>R² = 0.8121</strong></p>
+              <p>Mean Absolute Error: <strong style={{color: '#7c3aed'}}>1.1585 grades</strong></p>
             </div>
           </div>
 
           <div className="chart-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <h2>Top Feature Importance</h2>
+            <h2>📊 Top Feature Importance</h2>
             <div className="chart-container">
               <Bar data={featureImportanceData} options={chartOptions} />
             </div>
@@ -273,7 +273,7 @@ export default function Analytics() {
           </div>
 
           <div className="chart-card animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <h2>Grade Distribution</h2>
+            <h2>📉 Grade Distribution</h2>
             <div className="chart-container">
               <Bar data={gradeDistributionData} options={chartOptions} />
             </div>
@@ -283,12 +283,12 @@ export default function Analytics() {
           </div>
 
           <div className="chart-card animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <h2>Overall Accuracy</h2>
+            <h2>🎯 Overall Accuracy</h2>
             <div className="chart-container" style={{ maxWidth: '400px', margin: '0 auto' }}>
               <Pie data={accuracyData} options={chartOptions} />
             </div>
             <div className="card-footer">
-              <p>Model achieves <strong>81.21% accuracy</strong> on test data</p>
+              <p>Model achieves <strong style={{color: '#7c3aed'}}>81.21% accuracy</strong> on test data</p>
             </div>
           </div>
         </div>
