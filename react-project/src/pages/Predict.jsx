@@ -83,15 +83,20 @@ export default function Predict() {
     setPrediction(null)
 
     try {
+      console.log('Sending prediction request to http://localhost:5000/predict')
       const response = await fetch('http://localhost:5000/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
-      if (!response.ok) throw new Error('Prediction failed')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `Server error: ${response.status}`)
+      }
       
       const data = await response.json()
+      console.log('Prediction successful:', data)
       setPrediction(data)
       
       // Navigate to results after 1 second
@@ -99,8 +104,8 @@ export default function Predict() {
         navigate('/results', { state: { prediction: data } })
       }, 1000)
     } catch (err) {
-      setError(err.message)
-    } finally {
+      console.error('Prediction error:', err)
+      setError(`❌ Error: ${err.message}. Make sure the backend server is running on http://localhost:5000`)
       setLoading(false)
     }
   }

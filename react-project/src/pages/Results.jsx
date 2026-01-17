@@ -36,14 +36,15 @@ export default function Results() {
     )
   }
 
+  // Use 'prediction' from API response (it returns prediction.prediction)
+  const grade = prediction.prediction || prediction.predicted_grade || 0
+
   /**
    * Determine color based on grade performance level
-   * Green: Excellent (≥18), Orange: Good (≥15), Red: Needs improvement (<15)
+   * All grades now use light purple shades
    */
-  const gradeColor = (grade) => {
-    if (grade >= 18) return '#27ae60'
-    if (grade >= 15) return '#f39c12'
-    return '#e74c3c'
+  const gradeColor = (gradeVal) => {
+    return '#a78bfa' // Light purple for all grades
   }
 
   return (
@@ -56,9 +57,9 @@ export default function Results() {
       <div className="results-container">
         <div className="prediction-result">
           <div className="grade-display">
-            <div className="grade-circle" style={{ borderColor: gradeColor(prediction.predicted_grade) }}>
-              <span className="grade-number" style={{ color: gradeColor(prediction.predicted_grade) }}>
-                {prediction.predicted_grade.toFixed(2)}
+            <div className="grade-circle" style={{ borderColor: gradeColor(grade) }}>
+              <span className="grade-number" style={{ color: gradeColor(grade) }}>
+                {grade.toFixed(2)}
               </span>
               <span className="grade-label">Final Grade</span>
             </div>
@@ -87,7 +88,7 @@ export default function Results() {
         <div className="interpretation-section">
           <h2>Grade Interpretation</h2>
           <div className="grade-interpretation">
-            {prediction.predicted_grade >= 18 && (
+            {grade >= 18 && (
               <div className="interpretation-card success-card">
                 <span className="interpretation-icon">🌟</span>
                 <h3>Excellent Performance (18-20)</h3>
@@ -102,7 +103,7 @@ export default function Results() {
                 </div>
               </div>
             )}
-            {prediction.predicted_grade >= 15 && prediction.predicted_grade < 18 && (
+            {grade >= 15 && grade < 18 && (
               <div className="interpretation-card warning-card">
                 <span className="interpretation-icon">📚</span>
                 <h3>Good Performance (15-17)</h3>
@@ -117,7 +118,7 @@ export default function Results() {
                 </div>
               </div>
             )}
-            {prediction.predicted_grade >= 10 && prediction.predicted_grade < 15 && (
+            {grade >= 10 && grade < 15 && (
               <div className="interpretation-card info-card">
                 <span className="interpretation-icon">📖</span>
                 <h3>Average Performance (10-14)</h3>
@@ -132,7 +133,7 @@ export default function Results() {
                 </div>
               </div>
             )}
-            {prediction.predicted_grade < 10 && (
+            {grade < 10 && (
               <div className="interpretation-card error-card">
                 <span className="interpretation-icon">⚠️</span>
                 <h3>Needs Attention (Below 10)</h3>
