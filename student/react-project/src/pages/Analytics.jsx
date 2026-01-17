@@ -48,15 +48,10 @@ export default function Analytics() {
   const fetchMetadata = async () => {
     try {
       const response = await fetch('http://localhost:5000/metadata')
-      if (!response.ok) {
-        throw new Error('Failed to fetch metadata')
-      }
       const data = await response.json()
-      console.log('Metadata loaded:', data)
       setMetadata(data)
     } catch (err) {
       console.error('Error fetching metadata:', err)
-      setMetadata(null)
     } finally {
       setLoading(false)
     }
@@ -75,18 +70,18 @@ export default function Analytics() {
   }
 
   // Show message if no data is available
-  if (!metadata) {
+  if (!metadata || Object.keys(metadata).length === 0) {
     return (
       <div className="analytics-page">
         <div className="no-data-message animate-fade-in">
           <div className="no-data-icon">📊</div>
-          <h2>Unable to Load Analytics</h2>
-          <p>Could not connect to the backend server</p>
+          <h2>No Data Available</h2>
+          <p>Please provide data to analyze</p>
           <button 
             className="nav-button"
-            onClick={() => fetchMetadata()}
+            onClick={() => navigate('/predict')}
           >
-            Retry
+            Go to Predict
           </button>
         </div>
       </div>
@@ -99,18 +94,17 @@ export default function Analytics() {
     labels: ['R² Score', 'Correlation', 'Accuracy %'],
     datasets: [
       {
-        label: 'Model Performance Metrics',
-        data: [81.21, 85.0, 81.21],
+        label: 'Model Performance',
+        data: [0.8121, 0.85, 81.21],
         borderColor: '#7c3aed',
         backgroundColor: 'rgba(124, 58, 237, 0.1)',
-        borderWidth: 3,
+        borderWidth: 2,
         tension: 0.4,
         fill: true,
         pointBackgroundColor: '#7c3aed',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
-        pointRadius: 8,
-        pointHoverRadius: 10,
+        pointRadius: 6,
       }
     ]
   }

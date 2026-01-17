@@ -90,61 +90,22 @@ export default function Results() {
             {prediction.predicted_grade >= 18 && (
               <div className="interpretation-card success-card">
                 <span className="interpretation-icon">🌟</span>
-                <h3>Excellent Performance (18-20)</h3>
-                <p>Outstanding achievement! The student demonstrates exceptional mastery of the subject matter.</p>
-                <ul className="interpretation-list">
-                  <li>✓ Strong academic foundation</li>
-                  <li>✓ Excellent study habits and discipline</li>
-                  <li>✓ High likelihood of continued success</li>
-                </ul>
-                <div className="recommendation">
-                  <strong>Recommendation:</strong> Encourage advanced coursework and leadership opportunities.
-                </div>
+                <h3>Excellent Performance</h3>
+                <p>The student is predicted to achieve an excellent grade (18-20). This indicates outstanding academic performance and mastery of the subject matter.</p>
               </div>
             )}
             {prediction.predicted_grade >= 15 && prediction.predicted_grade < 18 && (
               <div className="interpretation-card warning-card">
                 <span className="interpretation-icon">📚</span>
-                <h3>Good Performance (15-17)</h3>
-                <p>Solid academic performance with room for excellence. The student shows strong understanding.</p>
-                <ul className="interpretation-list">
-                  <li>✓ Good grasp of core concepts</li>
-                  <li>✓ Consistent study patterns</li>
-                  <li>→ Potential for improvement to excellent range</li>
-                </ul>
-                <div className="recommendation">
-                  <strong>Recommendation:</strong> Focus on challenging topics and seek clarification on difficult concepts.
-                </div>
+                <h3>Good Performance</h3>
+                <p>The student is predicted to achieve a good grade (15-17). This shows solid academic understanding and strong performance.</p>
               </div>
             )}
-            {prediction.predicted_grade >= 10 && prediction.predicted_grade < 15 && (
-              <div className="interpretation-card info-card">
-                <span className="interpretation-icon">📖</span>
-                <h3>Average Performance (10-14)</h3>
-                <p>The student meets basic requirements but has significant potential for improvement.</p>
-                <ul className="interpretation-list">
-                  <li>→ Basic understanding present</li>
-                  <li>⚠ Needs more consistent study time</li>
-                  <li>→ Additional support recommended</li>
-                </ul>
-                <div className="recommendation">
-                  <strong>Recommendation:</strong> Increase study hours, consider tutoring, and improve attendance.
-                </div>
-              </div>
-            )}
-            {prediction.predicted_grade < 10 && (
+            {prediction.predicted_grade < 15 && (
               <div className="interpretation-card error-card">
                 <span className="interpretation-icon">⚠️</span>
-                <h3>Needs Attention (Below 10)</h3>
-                <p>Immediate intervention required. The student needs substantial support to improve performance.</p>
-                <ul className="interpretation-list">
-                  <li>⚠ Struggling with fundamentals</li>
-                  <li>⚠ High risk of academic failure</li>
-                  <li>⚠ Requires urgent support</li>
-                </ul>
-                <div className="recommendation">
-                  <strong>Recommendation:</strong> Urgent - Arrange one-on-one tutoring, parental meeting, and create personalized study plan.
-                </div>
+                <h3>Needs Improvement</h3>
+                <p>The student may need additional support to improve their grade. Consider extra study time or tutoring to enhance performance.</p>
               </div>
             )}
           </div>

@@ -676,11 +676,6 @@
   border-left: 4px solid #e74c3c;
 }
 
-.interpretation-card.info-card {
-  background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%);
-  border-left: 4px solid #3498db;
-}
-
 .interpretation-icon {
   font-size: 2rem;
   display: block;
@@ -690,40 +685,11 @@
 .interpretation-card h3 {
   color: #7c3aed;
   margin-bottom: 10px;
-  font-size: 1.3rem;
 }
 
 .interpretation-card p {
   color: #666;
   line-height: 1.6;
-  margin-bottom: 15px;
-}
-
-.interpretation-list {
-  list-style: none;
-  padding: 0;
-  margin: 15px 0;
-}
-
-.interpretation-list li {
-  padding: 8px 0;
-  color: #555;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.recommendation {
-  margin-top: 15px;
-  padding: 12px 15px;
-  background: rgba(124, 58, 237, 0.05);
-  border-radius: 8px;
-  border-left: 3px solid #7c3aed;
-}
-
-.recommendation strong {
-  color: #7c3aed;
-  display: block;
-  margin-bottom: 5px;
 }
 
 .actions-section {
