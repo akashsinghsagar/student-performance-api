@@ -8,8 +8,7 @@ import os
 
 # Initialize Flask app
 app = Flask(__name__)
-# Enable CORS for all origins (allow frontend to access API)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app)
 
 # Load trained model and preprocessing objects
 model_dir = os.path.dirname(os.path.abspath(__file__))
@@ -172,8 +171,4 @@ def predict_batch():
         return jsonify({'error': f'Batch prediction error: {str(e)}'}), 500
 
 if __name__ == '__main__':
-    print('=' * 50)
-    print('Starting Flask Server on http://localhost:5000')
-    print('Backend API ready for React frontend')
-    print('=' * 50)
-    app.run(debug=True, host='localhost', port=5000, use_reloader=False)
+    app.run(debug=True, host='0.0.0.0', port=5000)
