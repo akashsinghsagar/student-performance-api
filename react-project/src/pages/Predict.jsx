@@ -1,20 +1,7 @@
-/**
- * Predict Page Component
- * 
- * This page allows users to input student information to predict their final grade (G3).
- * The form collects 32 different features about the student including:
- * - Basic information (school, age, sex, address)
- * - Family background (parents' education, jobs, family size)
- * - Academic data (study time, failures, previous grades G1 & G2)
- * - Lifestyle factors (going out, alcohol consumption, health)
- * - Support systems (school/family support, extra activities)
- * 
- * The form sends data to the Flask backend (/predict endpoint) which returns
- * a predicted final grade using a trained Random Forest model.
- */
-
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import api, { APIError } from '../services/api'
+import { validateStudentForm } from '../utils/validation'
 import '../styles/pages.css'
 
 export default function Predict() {
@@ -59,53 +46,66 @@ export default function Predict() {
   const [prediction, setPrediction] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [validationErrors, setValidationErrors] = useState({})
 
   /**
-   * Handle form input changes
-   * Converts numeric strings to numbers for numeric fields
+   * Handle form input changes with real-time validation
    */
   const handleInputChange = (e) => {
     const { name, value } = e.target
+    const numericValue = isNaN(value) ? value : parseFloat(value)
+    
     setFormData(prev => ({
       ...prev,
-      [name]: isNaN(value) ? value : parseFloat(value)
+      [name]: numericValue
     }))
+    
+    // Clear validation error for this field
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[name]
+        return newErrors
+      })
+    }
   }
 
   /**
-   * Handle form submission
-   * Sends student data to Flask API and navigates to results page
+   * Handle form submission with validation
    */
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
     setPrediction(null)
 
-    try {
-      console.log('Sending prediction request to http://localhost:5000/predict')
-      const response = await fetch('http://localhost:5000/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
+    // Validate form
+    const validation = validateStudentForm(formData)
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors)
+      setError('Please fix the validation errors before submitting')
+      return
+    }
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `Server error: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      console.log('Prediction successful:', data)
+    setLoading(true)
+    setValidationErrors({})
+
+    try {
+      const data = await api.predictGrade(formData)
       setPrediction(data)
       
-      // Navigate to results after 1 second
+      // Navigate to results after brief delay
       setTimeout(() => {
         navigate('/results', { state: { prediction: data } })
-      }, 1000)
+      }, 800)
     } catch (err) {
-      console.error('Prediction error:', err)
-      setError(`❌ Error: ${err.message}. Make sure the backend server is running on http://localhost:5000`)
+      if (err instanceof APIError) {
+        setError(err.message)
+        if (err.errors.length > 0) {
+          setError(err.message + ': ' + err.errors.join(', '))
+        }
+      } else {
+        setError('Unable to connect to the server. Please try again.')
+      }
       setLoading(false)
     }
   }

@@ -1,9 +1,9 @@
-flask==3.0.0
-flask-cors==4.0.0
-pandas==2.1.0
-numpy==1.24.3
-scikit-learn==1.3.0
-waitress==3.0.2
 fastapi==0.128.0
-uvicorn==0.40.0
+uvicorn[standard]==0.40.0
 pydantic==2.12.5
+python-multipart==0.0.20
+scikit-learn==1.8.0
+pandas==2.3.3
+numpy==2.4.1
+python-dotenv==1.0.1
+joblib==1.5.3

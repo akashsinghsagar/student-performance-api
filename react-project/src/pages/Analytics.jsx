@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js'
 import { Line, Bar, Pie } from 'react-chartjs-2'
+import api from '../services/api'
 import '../styles/pages.css'
 
 // Register Chart.js components for rendering different chart types
@@ -47,11 +48,7 @@ export default function Analytics() {
    */
   const fetchMetadata = async () => {
     try {
-      const response = await fetch('http://localhost:5000/metadata')
-      if (!response.ok) {
-        throw new Error('Failed to fetch metadata')
-      }
-      const data = await response.json()
+      const data = await api.getMetadata()
       console.log('Metadata loaded:', data)
       setMetadata(data)
     } catch (err) {

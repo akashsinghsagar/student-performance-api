@@ -1,184 +1,124 @@
-from fastapi import FastAPI
+"""
+FastAPI Production Application
+Student Grade Prediction API
+"""
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import pickle
-import json
-import numpy as np
-import pandas as pd
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from contextlib import asynccontextmanager
+from dotenv import load_dotenv
 import os
-from typing import List, Dict
+import logging
 
-# Initialize FastAPI app
-app = FastAPI(title="Student Grade Prediction API")
+from routers import router
 
-# Enable CORS for frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+# Load environment variables
+load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan events"""
+    # Startup
+    logger.info("=" * 60)
+    logger.info("Starting Student Grade Prediction API")
+    logger.info(f"Environment: {os.getenv('ENVIRONMENT', 'development')}")
+    logger.info(f"Allowed Origins: {os.getenv('ALLOWED_ORIGINS', 'localhost')}")
+    logger.info("=" * 60)
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down Student Grade Prediction API")
+
+
+# Initialize FastAPI app with lifespan
+app = FastAPI(
+    title="Student Grade Prediction API",
+    description="Machine Learning API for predicting student final grades based on various factors",
+    version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
-# Load trained model and preprocessing objects
-model_dir = os.path.dirname(os.path.abspath(__file__))
+# Get allowed origins from environment or use default
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:5175").split(",")
 
-with open(os.path.join(model_dir, 'model.pkl'), 'rb') as f:
-    model = pickle.load(f)
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+    expose_headers=["*"]
+)
 
-with open(os.path.join(model_dir, 'scaler.pkl'), 'rb') as f:
-    scaler = pickle.load(f)
 
-with open(os.path.join(model_dir, 'label_encoders.pkl'), 'rb') as f:
-    label_encoders = pickle.load(f)
-
-with open(os.path.join(model_dir, 'feature_columns.pkl'), 'rb') as f:
-    feature_columns = pickle.load(f)
-
-with open(os.path.join(model_dir, 'model_metadata.json'), 'r') as f:
-    metadata = json.load(f)
-
-# Define the input data model
-class StudentInput(BaseModel):
-    school: str
-    sex: str
-    age: int
-    address: str
-    famsize: str
-    Pstatus: str
-    Medu: int
-    Fedu: int
-    Mjob: str
-    Fjob: str
-    reason: str
-    guardian: str
-    traveltime: int
-    studytime: int
-    failures: int
-    schoolsup: str
-    famsup: str
-    paid: str
-    activities: str
-    nursery: str
-    higher: str
-    internet: str
-    romantic: str
-    famrel: int
-    freetime: int
-    goout: int
-    Dalc: int
-    Walc: int
-    health: int
-    absences: int
-    G1: int
-    G2: int
-
-class BatchStudentInput(BaseModel):
-    students: List[StudentInput]
-
-class PredictionResponse(BaseModel):
-    predicted_grade: float
-
-class BatchPredictionResponse(BaseModel):
-    predictions: List[float]
-
-# Helper function to preprocess input data
-def preprocess_student_data(data: StudentInput) -> pd.DataFrame:
-    """Convert student input to preprocessed DataFrame ready for model prediction"""
-    # Create dictionary from input data
-    student_dict = data.model_dump()
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Custom validation error handler
     
-    # Create DataFrame
-    df = pd.DataFrame([student_dict])
+    Returns user-friendly error messages for validation failures
+    """
+    errors = []
+    for error in exc.errors():
+        field = " -> ".join(str(loc) for loc in error["loc"])
+        message = error["msg"]
+        errors.append(f"{field}: {message}")
     
-    # Encode categorical variables
-    categorical_columns = ['school', 'sex', 'address', 'famsize', 'Pstatus', 'Mjob', 
-                          'Fjob', 'reason', 'guardian', 'schoolsup', 'famsup', 'paid',
-                          'activities', 'nursery', 'higher', 'internet', 'romantic']
-    
-    for col in categorical_columns:
-        if col in label_encoders and col in df.columns:
-            df[col] = label_encoders[col].transform(df[col])
-    
-    # Ensure all feature columns are present in correct order
-    df = df[feature_columns]
-    
-    # Scale features
-    df_scaled = scaler.transform(df)
-    
-    return df_scaled
-
-@app.get("/")
-def read_root():
-    """Root endpoint with API information"""
-    return {
-        "message": "Student Grade Prediction API",
-        "version": "2.0",
-        "framework": "FastAPI",
-        "endpoints": {
-            "/predict": "POST - Predict student grade",
-            "/predict-batch": "POST - Batch predictions",
-            "/metadata": "GET - Model metadata",
-            "/health": "GET - Health check"
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "detail": "Validation error",
+            "errors": errors,
+            "error_type": "ValidationError"
         }
-    }
+    )
 
-@app.get("/health")
-def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "model_loaded": True}
 
-@app.get("/metadata")
-def get_metadata():
-    """Get model metadata and performance metrics"""
-    return metadata
-
-@app.post("/predict", response_model=PredictionResponse)
-def predict(data: StudentInput):
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
     """
-    Predict student final grade (G3) based on various features
+    Global exception handler
     
-    Returns predicted grade on a scale of 0-20
+    Catches unexpected errors and returns safe error messages
     """
-    try:
-        # Preprocess the input data
-        processed_data = preprocess_student_data(data)
-        
-        # Make prediction
-        prediction = model.predict(processed_data)[0]
-        
-        # Ensure prediction is within valid range (0-20)
-        prediction = max(0, min(20, prediction))
-        
-        return {"predicted_grade": float(prediction)}
+    logger.error(f"Unexpected error: {str(exc)}", exc_info=True)
     
-    except Exception as e:
-        return {"error": f"Prediction error: {str(e)}"}
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "detail": "An unexpected error occurred. Please try again later.",
+            "error_type": "InternalServerError"
+        }
+    )
 
-@app.post("/predict-batch", response_model=BatchPredictionResponse)
-def predict_batch(data: BatchStudentInput):
-    """
-    Batch prediction endpoint for multiple students
-    """
-    try:
-        predictions = []
-        
-        for student in data.students:
-            processed_data = preprocess_student_data(student)
-            prediction = model.predict(processed_data)[0]
-            prediction = max(0, min(20, prediction))
-            predictions.append(float(prediction))
-        
-        return {"predictions": predictions}
-    
-    except Exception as e:
-        return {"error": f"Batch prediction error: {str(e)}"}
 
-if __name__ == '__main__':
+# Include routers
+app.include_router(router, prefix="/api", tags=["API"])
+
+
+if __name__ == "__main__":
     import uvicorn
-    print('=' * 50)
-    print('Starting FastAPI Server on http://localhost:5000')
-    print('Backend API ready for React frontend')
-    print('Interactive docs: http://localhost:5000/docs')
-    print('=' * 50)
-    uvicorn.run(app, host="localhost", port=5000)
+    
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    
+    uvicorn.run(
+        "main:app",
+        host=host,
+        port=port,
+        reload=os.getenv("ENVIRONMENT", "development") == "development",
+        log_level="info"
+    )

@@ -1,0 +1,13 @@
+.git
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env*
+.venv/
+node_modules/
+student-mat.csv
+student-por.csv
+student.txt
+student-merge.R

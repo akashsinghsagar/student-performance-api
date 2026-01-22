@@ -1,9 +1,0 @@
-{
-  "endpoints": {
-    "health": "/health (GET)",
-    "metadata": "/metadata (GET)",
-    "predict": "/predict (POST)"
-  },
-  "message": "Student Grade Prediction API",
-  "version": "1.0"
-}
